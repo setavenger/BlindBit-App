@@ -101,38 +101,38 @@ export const getFeeRecommendation = async () => {
   }
 };
 
-// export async function submitTxHex(txHex) {
-//   let success = false;
-//   let err = '';
-//   try {
-//     const response = await fetch(baseUrl + '/forward-tx', {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/x-www-form-urlencoded',
-//       },
-//       body: `data=${encodeURIComponent(txHex)}`, // Properly format the body
-//     });
-//     console.log('response.ok', response.ok);
-//     if (!response.ok) {
-//       // todo filter for different kinds of errors
-//       success = false;
-//       err = 'could not submit transaction, please try later';
-//       console.error(err);
-//       return {success, err};
-//     }
-//     success = true;
-//     err = '';
-//   } catch (e) {
-//     console.error('Error:', e);
-//     success = false;
-//     err = e;
-//   }
-//
-//   console.log('success short before:', success);
-//   return {success, err};
-// }
+export async function submitTxHex(txHex) {
+  let success = false;
+  let err = '';
+  try {
+    const response = await fetch(baseUrl + '/forward-tx', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: `data=${encodeURIComponent(txHex)}`, // Properly format the body
+    });
+    console.log('response.ok', response.ok);
+    if (!response.ok) {
+      // todo filter for different kinds of errors
+      success = false;
+      err = 'could not submit transaction, please try later';
+      console.error(err);
+      return {success, err};
+    }
+    success = true;
+    err = '';
+  } catch (e) {
+    console.error('Error:', e);
+    success = false;
+    err = e;
+  }
 
-export async function submitTxHex(tor, txHex) {
+  console.log('success short before:', success);
+  return {success, err};
+}
+
+export async function submitTxHexTor(tor, txHex) {
   let success = false;
   let err = '';
   try {

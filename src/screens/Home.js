@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useRef, useState} from 'react';
-import Margin20View from '../components/marginedView';
+import {Margin20View} from '../components/marginedView';
 import {
   Animated,
   Platform,
@@ -135,12 +135,16 @@ const Home = () => {
     });
   };
 
+  const navigateToSettings = () => {
+    navigate('SettingsRoot');
+  };
+
   const triggerRefresh = async () => {
     setIsSyncing(true);
     if (!isSyncing) {
       try {
         startRotation();
-        await wallet.syncWallet();
+        await wallet.syncWallet(saveWalletData);
 
         setIsSyncing(false);
         setBalance(wallet.computeBalance());
@@ -177,6 +181,7 @@ const Home = () => {
       }
     }
   };
+
   const triggerHardRefresh = async () => {
     const confirm = await showConfirmAlert(
       undefined,
@@ -189,7 +194,7 @@ const Home = () => {
     if (!isSyncing) {
       try {
         startRotation();
-        await wallet.syncWallet(undefined, true);
+        await wallet.syncWallet(saveWalletData, undefined, true);
 
         setIsSyncing(false);
         setBalance(wallet.computeBalance());
@@ -228,6 +233,7 @@ const Home = () => {
   };
 
   const renderTopBar = props => {
+    // todo add indicator for sync progress
     return (
       <View style={styles.topBar}>
         <Animated.View style={{transform: [{rotate: spin}]}}>
@@ -240,7 +246,7 @@ const Home = () => {
         <View>
           <Text style={{color: '#FF0000'}}>Signet</Text>
         </View>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={navigateToSettings}>
           <GearIcon style={styles.topBarIcon} />
         </TouchableOpacity>
       </View>

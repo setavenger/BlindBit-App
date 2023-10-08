@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {View, StyleSheet, Text, Linking, TouchableOpacity} from 'react-native';
-import Margin20View from '../../components/marginedView';
+import {Margin20View} from '../../components/marginedView';
 import {
   ContinueButton,
   Spacing10,
@@ -61,7 +61,7 @@ const ResultPositive = () => {
   };
 
   const openTransaction = async () => {
-    await Linking.openURL('http://localhost/tx/' + txId);
+    await Linking.openURL('https://mempool.space/signet/tx/' + txId);
   };
 
   return (

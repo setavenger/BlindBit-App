@@ -1,8 +1,7 @@
-import React, {useContext, useEffect, useState} from 'react';
-import {Alert, StyleSheet, Switch, Text, TextInput, View} from 'react-native';
-import Margin20View from '../components/marginedView';
+import React, {useContext, useState} from 'react';
+import {Alert, StyleSheet, Text, TextInput, View} from 'react-native';
+import {Margin20ViewScroll} from '../components/marginedView';
 import {ContinueButton, Spacing40, SpacingVar} from '../components/general';
-import {newMnemonic} from '../lib/wallet/newWallet';
 import {walletFromMnemonic} from '../lib/wallet/newWallet';
 import {dispatch} from '../navigation/NavigationService';
 import {StackActions} from '@react-navigation/native';
@@ -40,7 +39,7 @@ const Recovery = () => {
   };
 
   return (
-    <Margin20View style={{backgroundColor: '#F5F5F5'}}>
+    <Margin20ViewScroll style={{backgroundColor: '#F5F5F5'}}>
       <View style={{flex: 1, flexDirection: 'column'}}>
         <Spacing40 />
         <View style={{alignItems: 'center'}}>
@@ -125,7 +124,7 @@ const Recovery = () => {
       <View style={{flex: 1, justifyContent: 'flex-end'}}>
         <ContinueButton color={'#F7931A'} onPress={onContinuePress} />
       </View>
-    </Margin20View>
+    </Margin20ViewScroll>
   );
 };
 

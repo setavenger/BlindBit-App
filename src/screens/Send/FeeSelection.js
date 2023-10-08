@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import {useRoute} from '@react-navigation/native';
 import {ContinueButton, SpacingVar} from '../../components/general';
-import Margin20View from '../../components/marginedView';
+import {Margin20View} from '../../components/marginedView';
 import CaretRightIcon from '../../assets/icons/bitcoin-icons/svg/outline/caret-right.svg';
 import {navigate} from '../../navigation/NavigationService';
 import {StorageContext} from '../../storage-context';
@@ -327,13 +327,16 @@ const FeeSelection = () => {
       [[address, parseInt(amount, 10)]],
       feeRate,
     );
+    if (!psbt) {
+      Alert.alert('Could not create transaction'); // todo should the user see low level error here?
+      return;
+    }
 
     navigate('SendDetailsRoot', {
       screen: 'ReviewDetails',
       params: {
         address: address,
         amount: amount,
-        psbt: psbt.toBase64(),
         txHex: psbt.extractTransaction(false).toHex(),
         txId: psbt.extractTransaction(true).getId(), // no need to check here again
         effectiveFeeRate: psbt.getFeeRate(),

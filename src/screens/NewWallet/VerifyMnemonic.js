@@ -1,6 +1,6 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {Alert, StyleSheet, Text, TextInput, View} from 'react-native';
-import Margin20View from '../../components/marginedView';
+import {Margin20ViewScroll} from '../../components/marginedView';
 import {ContinueButton, Spacing40, SpacingVar} from '../../components/general';
 import {dispatch} from '../../navigation/NavigationService';
 import {
@@ -88,7 +88,7 @@ const VerifyMnemonic = () => {
   };
 
   return (
-    <Margin20View style={{backgroundColor: '#F5F5F5'}}>
+    <Margin20ViewScroll style={{backgroundColor: '#F5F5F5'}}>
       <View style={{flexDirection: 'column'}}>
         <View style={{alignItems: 'center'}}>
           <Text style={styles.title}>This is your recovery phrase</Text>
@@ -138,7 +138,7 @@ const VerifyMnemonic = () => {
           onPress={onContinuePress}
         />
       </View>
-    </Margin20View>
+    </Margin20ViewScroll>
   );
 };
 

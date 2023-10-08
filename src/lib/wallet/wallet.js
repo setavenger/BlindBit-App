@@ -53,7 +53,7 @@ export class Wallet {
     this.scriptsToWatch = []; // array of {script: '5120...', tweak: ''} or mnemonic seeds
   }
 
-  async syncWallet(fromHeight = undefined, hardRefresh = false) {
+  async syncWallet(saveWallet, fromHeight = undefined, hardRefresh = false) {
     console.log('syncing wallet...');
     if (fromHeight) {
       this.lastBlockHeight = fromHeight;
@@ -89,6 +89,9 @@ export class Wallet {
         this.removeSpentUTXOs(spentUTXOs);
         // we only update our height if all processes were successful
         this.lastBlockHeight = blockHeight;
+        if (blockHeight % 100 === 0) {
+          saveWallet(this);
+        }
       } catch (e) {
         console.warn(e);
       }
@@ -98,14 +101,13 @@ export class Wallet {
 
   async syncBlock(blockHeight) {
     const tweakData = await getTweakData(blockHeight);
-    // todo filter is deaktivated on Signet due to lack of node with Cfilters
-    const filterResp = await getFilterTaproot(blockHeight);
 
-    console.log('tweaks:', tweakData);
-    console.log('filter:', filterResp);
     if (tweakData.length === 0) {
       return;
     }
+
+    const filterResp = await getFilterTaproot(blockHeight);
+
     const {pubKeysToCheck: pubKeysFromTweak, tweaksAsKey} = getPubKeysFromTweak(
       this.scan,
       this.spend,

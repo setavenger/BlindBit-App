@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {StyleSheet, Switch, Text, View} from 'react-native';
-import Margin20View from '../../components/marginedView';
+import {Margin20View} from '../../components/marginedView';
 import {
   ContinueButton,
   Spacing05,
@@ -10,6 +10,7 @@ import {
 } from '../../components/general';
 import {navigate} from '../../navigation/NavigationService';
 import {newMnemonic} from '../../lib/wallet/newWallet';
+import {useRoute} from '@react-navigation/native';
 
 const styles = StyleSheet.create({
   separator: {
@@ -28,6 +29,10 @@ const styles = StyleSheet.create({
   },
 });
 const Mnemonic = () => {
+  const params = useRoute().params;
+  const passedMnemonic =
+    params && params.passedMnemonic ? params.passedMnemonic : undefined;
+
   const [mnemonic, setMnemonic] = useState(['']);
   const onContinuePress = () => {
     navigate('VerifyMnemonicRoot', {
@@ -37,11 +42,15 @@ const Mnemonic = () => {
   };
 
   useEffect(() => {
-    (async function () {
-      const secret = await newMnemonic();
-      setMnemonic(secret.split(' '));
-    })();
-  }, []);
+    if (passedMnemonic) {
+      setMnemonic(passedMnemonic.split(' '));
+    } else {
+      (async function () {
+        const secret = await newMnemonic();
+        setMnemonic(secret.split(' '));
+      })();
+    }
+  }, [passedMnemonic]);
 
   return (
     <Margin20View style={{backgroundColor: '#F5F5F5'}}>
@@ -52,8 +61,8 @@ const Mnemonic = () => {
         <Spacing40 />
         <View>
           <Text style={styles.text}>
-            Make sure to write it down as shown here. You have to verify this
-            later.
+            Make sure to write it down as shown here.
+            {!passedMnemonic && 'You have to verify this later.'}
           </Text>
         </View>
         <Spacing40 />
@@ -106,9 +115,11 @@ const Mnemonic = () => {
           ))}
         </View>
       </View>
-      <View style={{flex: 1, justifyContent: 'flex-end'}}>
-        <ContinueButton color={'#F7931A'} onPress={onContinuePress} />
-      </View>
+      {!passedMnemonic && (
+        <View style={{flex: 1, justifyContent: 'flex-end'}}>
+          <ContinueButton color={'#F7931A'} onPress={onContinuePress} />
+        </View>
+      )}
     </Margin20View>
   );
 };

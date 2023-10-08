@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import Margin20View from '../../components/marginedView';
+import {Margin20View} from '../../components/marginedView';
 import {
   KeyboardAvoidingView,
   SafeAreaView,

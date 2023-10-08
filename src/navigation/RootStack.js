@@ -10,6 +10,7 @@ import {
   VerifyMnemonicRoot,
   WelcomeRoot,
 } from './NewWalletStacks';
+import {SettingsRoot} from './SettingsStack';
 
 const RootStack = createNativeStackNavigator();
 const NavigationDefaultOptions = {
@@ -41,6 +42,22 @@ const Navigation = () => {
       <RootStack.Screen
         name="RecoveryRoot"
         component={RecoveryRoot}
+        options={{
+          ...NavigationDefaultOptions,
+          headerShadowVisible: false,
+          // headerShown: false,
+          headerStyle: {
+            backgroundColor: '#F5F5F5', // todo use color theme
+            height: 60, // adjust the height as per your preference
+          },
+          headerBackTitleVisible: false,
+          headerTitle: '',
+          headerTintColor: '#000000',
+        }}
+      />
+      <RootStack.Screen
+        name="SettingsRoot"
+        component={SettingsRoot}
         options={{
           ...NavigationDefaultOptions,
           headerShadowVisible: false,

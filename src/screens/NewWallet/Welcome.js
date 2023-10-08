@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {StyleSheet, Switch, Text, View} from 'react-native';
-import Margin20View from '../../components/marginedView';
+import {Margin20View} from '../../components/marginedView';
 import {
   ContinueButton,
   Spacing20,

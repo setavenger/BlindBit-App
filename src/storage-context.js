@@ -1,14 +1,22 @@
 import {createContext, useState} from 'react';
 import Tor from 'react-native-tor';
 import {Wallet} from './lib/wallet/wallet';
-const bip39 = require('bip39');
 import RNSecureKeyStore, {ACCESSIBLE} from 'react-native-secure-key-store';
 import elliptic from 'elliptic';
 import {getPrice} from './lib/api/priceFiat';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {stringToBoolean} from './lib/utils';
+
+const bip39 = require('bip39');
 const secp256k1 = new elliptic.ec('secp256k1');
 let Buffer = require('buffer/').Buffer;
 
 export const StorageContext = createContext(undefined);
+
+export const StorageKeys = {
+  IsTorEnabled: 'is_tor_enabled',
+  Wallet: 'wallet',
+};
 
 export const LoadStates = {
   NotLoaded: 'notLoaded', // no data ahs been tried to be fetched
@@ -18,22 +26,54 @@ export const LoadStates = {
 const StorageProvider = ({children}) => {
   const [wallet, setWallet] = useState(null);
   const [loadState, setLoadState] = useState(LoadStates.NotLoaded);
-  const [price, setPrice] = useState(false);
+  const [price, setPrice] = useState(0);
   const [updater, setUpdater] = useState(0);
-  const tor = Tor();
+  const [tor, setTor] = useState(null);
+  const [isTorEnabled, setIsTorEnabled] = useState(false);
 
   const update = () => {
     setUpdater(Date.now);
   };
+
+  const loadApp = async () => {
+    await loadSettings();
+    await loadWallet();
+  };
+
+  const loadSettings = async () => {
+    const isTor = await AsyncStorage.getItem(StorageKeys.IsTorEnabled);
+    if (isTor === null) {
+      setIsTorEnabled(false);
+    } else {
+      const isTorBool = stringToBoolean(isTor);
+      setIsTorEnabled(isTorBool);
+
+      if (isTorBool) {
+        setTor(Tor());
+      }
+    }
+  };
+
+  const saveTorSettings = async state => {
+    console.log('saving app settings');
+    try {
+      await AsyncStorage.setItem(StorageKeys.IsTorEnabled, state.toString());
+      if (state) {
+        setTor(Tor());
+      } else {
+        // await tor.stopDaemon();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    console.log('settings saved');
+
+    return true;
+  };
+
   const loadWallet = async () => {
     try {
-      await tor.startIfNotStarted();
-    } catch (e) {
-      console.warn(e);
-    }
-
-    try {
-      const data = await RNSecureKeyStore.get('wallet');
+      const data = await RNSecureKeyStore.get(StorageKeys.Wallet);
       const res = JSON.parse(data);
 
       const scanKey = secp256k1.keyFromPrivate(Buffer.from(res.scan, 'hex'));
@@ -85,7 +125,7 @@ const StorageProvider = ({children}) => {
     walletData.labels = walletToSave.labels;
     walletData.lastBlockHeight = walletToSave.lastBlockHeight;
 
-    await RNSecureKeyStore.set('wallet', JSON.stringify(walletData), {
+    await RNSecureKeyStore.set(StorageKeys.Wallet, JSON.stringify(walletData), {
       accessible: ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
     });
   };
@@ -93,6 +133,10 @@ const StorageProvider = ({children}) => {
   const setWalletAndSave = async walletToSave => {
     setWallet(walletToSave);
     await saveWalletData(walletToSave);
+  };
+
+  const deleteWallet = async () => {
+    await RNSecureKeyStore.remove(StorageKeys.Wallet);
   };
 
   return (
@@ -103,6 +147,8 @@ const StorageProvider = ({children}) => {
         setWallet,
         setWalletAndSave,
         loadWallet,
+        loadSettings,
+        loadApp,
         loadState,
         setLoadState,
         price,
@@ -111,6 +157,10 @@ const StorageProvider = ({children}) => {
         tor,
         update,
         updater,
+        isTorEnabled,
+        setIsTorEnabled,
+        saveTorSettings,
+        deleteWallet,
       }}>
       {children}
     </StorageContext.Provider>

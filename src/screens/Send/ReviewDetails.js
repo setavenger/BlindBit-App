@@ -1,13 +1,11 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {View, StyleSheet, Text, Platform, Alert} from 'react-native';
-import Margin20View from '../../components/marginedView';
+import {Margin20View} from '../../components/marginedView';
 import {ContinueButton, Spacing05, SpacingVar} from '../../components/general';
 import {useRoute} from '@react-navigation/native';
-import {submitTxHex} from '../../lib/api/wallet';
+import {submitTxHex, submitTxHexTor} from '../../lib/api/wallet';
 import {navigate} from '../../navigation/NavigationService';
-import {showConfirmAlert} from '../../components/confirm';
 import {StorageContext} from '../../storage-context';
-import {extractDataFromPSBT} from '../../lib/wallet/wallet';
 
 const styles = StyleSheet.create({
   separator: {
@@ -29,12 +27,21 @@ const styles = StyleSheet.create({
 });
 
 const ReviewDetails = () => {
-  const {tor, wallet, setWalletAndSave, update} = useContext(StorageContext);
+  const {tor, wallet, setWalletAndSave, update, isTorEnabled} =
+    useContext(StorageContext);
   const {address, amount, txHex, effectiveFeeRate, txId} = useRoute().params;
 
   const onContinuePress = async () => {
     console.log('attempting send of transaction');
-    const {success, err: error} = await submitTxHex(tor, txHex);
+    let success = false;
+    let error = '';
+
+    if (isTorEnabled) {
+      ({success, err: error} = await submitTxHexTor(tor, txHex));
+    } else {
+      ({success, err: error} = await submitTxHex(txHex));
+    }
+
     console.log(success);
     if (success) {
       const updatedWallet = wallet.removeJustSpentUTXOs(txHex);

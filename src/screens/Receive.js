@@ -3,7 +3,7 @@ import {View, StyleSheet, Text, TouchableOpacity} from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import Clipboard from '@react-native-clipboard/clipboard';
 
-import Margin20View from '../components/marginedView';
+import {Margin20View} from '../components/marginedView';
 import {StorageContext} from '../storage-context';
 import {Spacing10, Spacing20, SpacingVar} from '../components/general';
 

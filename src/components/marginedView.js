@@ -12,7 +12,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const Margin20View = ({style, children}) => {
+export const Margin20ViewScroll = ({style, children}) => {
   return (
     <SafeAreaView style={[styles.root, style]}>
       <KeyboardAwareScrollView
@@ -27,4 +27,6 @@ const Margin20View = ({style, children}) => {
   );
 };
 
-export default Margin20View;
+export const Margin20View = ({style, children}) => {
+  return <SafeAreaView style={[styles.root, style]}>{children}</SafeAreaView>;
+};

@@ -1,6 +1,6 @@
 import React, {useContext, useEffect} from 'react';
 import {SafeAreaView, StyleSheet, Text} from 'react-native';
-import Margin20View from '../components/marginedView';
+import {Margin20View} from '../components/marginedView';
 import {StorageContext, LoadStates} from '../storage-context';
 import {StackActions, useNavigation} from '@react-navigation/native';
 import {navigate} from '../navigation/NavigationService';
@@ -23,11 +23,11 @@ const styles = StyleSheet.create({
 
 const Splash = () => {
   const {dispatch} = useNavigation();
-  const {loadState, loadWallet} = useContext(StorageContext);
+  const {loadState, loadApp} = useContext(StorageContext);
 
   // loadWallet();
   useEffect(() => {
-    loadWallet();
+    loadApp();
   }, []);
 
   useEffect(() => {
