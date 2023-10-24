@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {Margin20View} from '../../components/marginedView';
 import {
   KeyboardAvoidingView,
@@ -21,6 +21,7 @@ import QRCodeIcon from '../../assets/icons/bitcoin-icons/svg/outline/qr-code.svg
 import * as navigation from '../../navigation/NavigationService';
 import {useRoute} from '@react-navigation/native';
 import {NumericFormat} from 'react-number-format';
+import {StorageContext} from '../../storage-context';
 
 const styles = StyleSheet.create({
   container: {
@@ -38,7 +39,6 @@ const styles = StyleSheet.create({
     borderColor: 'black',
     padding: 10,
     justifyContent: 'center',
-    // alignItems: 'center',
   },
   icon: {
     height: 30,
@@ -48,10 +48,11 @@ const styles = StyleSheet.create({
 });
 
 const SendDetails = () => {
+  const {price} = useContext(StorageContext);
   const [address, setAddress] = useState('');
-  const [amount, setAmount] = useState('');
+  const [amount, setAmount] = useState(0);
   const [displayAmount, setDisplayAmount] = useState(''); // for storing the formatted display value
-
+  const [amountFiat, setAmountFiat] = useState(0);
   const {addressScan} = useRoute().params || '';
 
   useEffect(() => {
@@ -59,6 +60,10 @@ const SendDetails = () => {
       parseAddress(addressScan);
     }
   }, [addressScan]);
+
+  useEffect(() => {
+    setAmountFiat((price * amount) / 100_000_000);
+  }, [price, amount]);
 
   const onContinuePress = () => {
     navigate('SendDetailsRoot', {
@@ -69,13 +74,15 @@ const SendDetails = () => {
       },
     });
   };
+
   const parseAddress = data => {
-    if (data.startsWith('bitcoin:')) {
+    if (data.toLowerCase().startsWith('bitcoin:')) {
       setAddress(data.slice(8));
     } else {
       // should have bitcoin: in the beginning. For other cases needs more elaborate parsing capabilities (see bluewallet potentially)
     }
   };
+
   const onOpenQRScanner = () => {
     console.log('opened scanner');
     navigate('QRScannerRoot', {screen: 'QRScanner'});
@@ -129,23 +136,29 @@ const SendDetails = () => {
             <Spacing20 />
             <Text>Amount</Text>
             <Spacing05 />
-            <View style={[styles.inputField]}>
-              <NumericFormat
-                value={displayAmount}
-                displayType={'text'}
-                thousandSeparator={true}
-                renderText={value => (
-                  <TextInput
-                    autoCorrect={false}
-                    autoCapitalize={'none'}
-                    onChangeText={handleAmountChange}
-                    value={value}
-                    placeholder="Amount in Sats"
-                    keyboardType="numeric"
-                    style={{height: 40}}
-                  />
-                )}
-              />
+            <View>
+              <View style={[styles.inputField]}>
+                <NumericFormat
+                  value={displayAmount}
+                  displayType={'text'}
+                  thousandSeparator={true}
+                  renderText={value => (
+                    <TextInput
+                      autoCorrect={false}
+                      autoCapitalize={'none'}
+                      onChangeText={handleAmountChange}
+                      value={value}
+                      placeholder="Amount in Sats"
+                      keyboardType="numeric"
+                      style={{height: 40}}
+                    />
+                  )}
+                />
+              </View>
+              <Text style={{marginLeft: 10, color: '#808080'}}>
+                ${' '}
+                {parseFloat(amountFiat, 10).toFixed(2).toLocaleString('en-US')}
+              </Text>
             </View>
           </View>
           <Spacing40 />

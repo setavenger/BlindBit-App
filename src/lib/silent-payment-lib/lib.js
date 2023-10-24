@@ -338,55 +338,63 @@ function getPubKeysFromTweak(scanPriv, spendPub, tweakData, labels = null) {
   const n = 0;
   for (const tweak of tweakData) {
     // todo just check both until we find a way to properly handle the even uneven issue
-    const tweakAsKeyEven = secp256k1.keyFromPublic(
-      Buffer.from('02' + tweak, 'hex'),
-    );
-    const tweakAsKeyOdd = secp256k1.keyFromPublic(
-      Buffer.from('03' + tweak, 'hex'),
-    );
+    // const tweakAsKeyEven = secp256k1.keyFromPublic(
+    //   Buffer.from('02' + tweak.slice(2), 'hex'),
+    // );
+    // const tweakAsKeyOdd = secp256k1.keyFromPublic(
+    //   Buffer.from('03' + tweak.slice(2), 'hex'),
+    // );
+    const tweakAsKey = secp256k1.keyFromPublic(Buffer.from(tweak, 'hex'));
 
-    const PnAsKeyEven = getPubKeyBasedOnTweak(
-      scanPriv,
-      spendPub,
-      tweakAsKeyEven,
-      n,
-    );
+    // const PnAsKeyEven = getPubKeyBasedOnTweak(
+    //   scanPriv,
+    //   spendPub,
+    //   tweakAsKeyEven,
+    //   n,
+    // );
+    //
+    // const PnAsKeyOdd = getPubKeyBasedOnTweak(
+    //   scanPriv,
+    //   spendPub,
+    //   tweakAsKeyOdd,
+    //   n,
+    // );
 
-    const PnAsKeyOdd = getPubKeyBasedOnTweak(
-      scanPriv,
-      spendPub,
-      tweakAsKeyOdd,
-      n,
-    );
+    const PnAsKey = getPubKeyBasedOnTweak(scanPriv, spendPub, tweakAsKey, n);
 
-    const changeEven = getChangePubKeyForScanningAsKey(
-      scanPriv,
-      spendPub,
-      tweakAsKeyEven,
-      0,
-    );
-    const changeOdd = getChangePubKeyForScanningAsKey(
-      scanPriv,
-      spendPub,
-      tweakAsKeyOdd,
-      0,
-    );
+    // const changeEven = getChangePubKeyForScanningAsKey(
+    //   scanPriv,
+    //   spendPub,
+    //   tweakAsKeyEven,
+    //   0,
+    // );
+    // const changeOdd = getChangePubKeyForScanningAsKey(
+    //   scanPriv,
+    //   spendPub,
+    //   tweakAsKeyOdd,
+    //   0,
+    // );
 
     pubKeysToCheck.push(
-      Buffer.from('5120' + getBytes(PnAsKeyEven, true).toString('hex'), 'hex'),
-    );
-    pubKeysToCheck.push(
-      Buffer.from('5120' + getBytes(PnAsKeyOdd, true).toString('hex'), 'hex'),
-    );
-    pubKeysToCheck.push(
-      Buffer.from('5120' + getBytes(changeEven, true).toString('hex'), 'hex'),
-    );
-    pubKeysToCheck.push(
-      Buffer.from('5120' + getBytes(changeOdd, true).toString('hex'), 'hex'),
+      Buffer.from('5120' + getBytes(PnAsKey, true).toString('hex'), 'hex'),
     );
 
-    tweaksAsKey.push(tweakAsKeyEven);
-    tweaksAsKey.push(tweakAsKeyOdd);
+    // pubKeysToCheck.push(
+    //   Buffer.from('5120' + getBytes(PnAsKeyEven, true).toString('hex'), 'hex'),
+    // );
+    // pubKeysToCheck.push(
+    //   Buffer.from('5120' + getBytes(PnAsKeyOdd, true).toString('hex'), 'hex'),
+    // );
+    // pubKeysToCheck.push(
+    //   Buffer.from('5120' + getBytes(changeEven, true).toString('hex'), 'hex'),
+    // );
+    // pubKeysToCheck.push(
+    //   Buffer.from('5120' + getBytes(changeOdd, true).toString('hex'), 'hex'),
+    // );
+
+    tweaksAsKey.push(tweakAsKey);
+    // tweaksAsKey.push(tweakAsKeyEven);
+    // tweaksAsKey.push(tweakAsKeyOdd);
 
     // check for change label
 

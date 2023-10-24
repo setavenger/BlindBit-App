@@ -34,7 +34,7 @@ const TorSetting = () => {
   };
 
   return (
-    <Margin20View>
+    <Margin20View style={{backgroundColor: '#F5F5F5'}}>
       <View>
         <Text style={styles.title}>Tor Settings</Text>
         <SpacingVar length={30} />
@@ -54,7 +54,8 @@ const TorSetting = () => {
         <Spacing20 />
         <Text>
           When this is activated your transactions will be submitted via the tor
-          network. This improves your privacy.
+          network. This improves your privacy. Submitting transaction will take
+          a couple seconds.
         </Text>
       </View>
       {/*<View style={{flex: 1, justifyContent: 'flex-end'}}>*/}

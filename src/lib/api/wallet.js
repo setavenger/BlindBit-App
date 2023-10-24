@@ -1,6 +1,8 @@
 import {makeTorRequest} from './tor';
 
-const baseUrl = 'http://192.168.178.20:8000';
+// const baseUrl = 'http://192.168.178.20:8000';
+const baseUrl = 'https://blindbit.snblago.com';
+// const baseUrl = 'http://192.168.1.29:8000';
 
 export const getBestBlock = async () => {
   try {

@@ -1,7 +1,7 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useLayoutEffect, useState} from 'react';
 import {Alert, StyleSheet, Text, TextInput, View} from 'react-native';
 import {Margin20ViewScroll} from '../components/marginedView';
-import {ContinueButton, Spacing40, SpacingVar} from '../components/general';
+import {ContinueButton, Spacing20, SpacingVar} from '../components/general';
 import {walletFromMnemonic} from '../lib/wallet/newWallet';
 import {dispatch} from '../navigation/NavigationService';
 import {StackActions} from '@react-navigation/native';
@@ -26,34 +26,47 @@ const styles = StyleSheet.create({
 const Recovery = () => {
   const {setWalletAndSave} = useContext(StorageContext);
   const [inputValues, setInputValues] = useState(Array(12).fill(''));
+  const [isLoading, setIsLoading] = useState(false);
+  // const forceUpdate = useState()[1];
+
+  // useLayoutEffect(() => {
+  //   forceUpdate(val => !val); // toggle an unused state to force render
+  // }, [forceUpdate, isLoading]);
 
   const onContinuePress = async () => {
+    console.log('pressed');
+    setIsLoading(true); // <- should start overlay here
+    await new Promise(resolve => setTimeout(resolve, 0)); // This ensures that the state is updated and the overlay is rendered before moving on
+
     try {
       const wallet = await walletFromMnemonic(inputValues.join(' '), false);
       await setWalletAndSave(wallet);
-      console.log('created wallet');
-      dispatch(StackActions.replace('Navigation'));
+      console.log('created wallet'); // <- does start around overlay here
+      setIsLoading(false); // <- overlay should be removed here
+      dispatch(StackActions.replace('Navigation')); // <- overlay is still active while stack is being replaced
     } catch (e) {
       Alert.alert(e);
+      setIsLoading(false);
     }
   };
 
   return (
-    <Margin20ViewScroll style={{backgroundColor: '#F5F5F5'}}>
+    <Margin20ViewScroll
+      style={{backgroundColor: '#F5F5F5'}}
+      loading={isLoading}>
       <View style={{flex: 1, flexDirection: 'column'}}>
-        <Spacing40 />
         <View style={{alignItems: 'center'}}>
           <Text style={styles.title}>
             Recover a wallet from a 12 word seed phrase
           </Text>
         </View>
-        <Spacing40 />
+        <Spacing20 />
         <View>
           <Text style={styles.text}>
             Enter the words below to recover your wallet in this app
           </Text>
         </View>
-        <Spacing40 />
+        <Spacing20 />
         <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
           {Array(12)
             .fill(null)
@@ -120,7 +133,7 @@ const Recovery = () => {
             ))}
         </View>
       </View>
-      <Spacing40 />
+      <Spacing20 />
       <View style={{flex: 1, justifyContent: 'flex-end'}}>
         <ContinueButton color={'#F7931A'} onPress={onContinuePress} />
       </View>

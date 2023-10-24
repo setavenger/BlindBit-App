@@ -55,7 +55,7 @@ const SettingsOverview = () => {
   ];
 
   return (
-    <Margin20View>
+    <Margin20View style={{backgroundColor: '#F5F5F5'}}>
       <View style={{flexDirection: 'column'}}>
         <Text style={styles.title}>Settings</Text>
         <SpacingVar length={30} />

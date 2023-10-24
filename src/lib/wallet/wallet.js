@@ -5,6 +5,7 @@ import {
   getSpentUTXOs,
   getFilterTaproot,
 } from '../api/wallet';
+import {getCurrentTimestamp} from '../utils';
 import splib, {
   getFromPublicECKey,
   getPubKeysFromTweak,
@@ -53,8 +54,15 @@ export class Wallet {
     this.scriptsToWatch = []; // array of {script: '5120...', tweak: ''} or mnemonic seeds
   }
 
-  async syncWallet(saveWallet, fromHeight = undefined, hardRefresh = false) {
+  async syncWallet(
+    saveWallet,
+    setSyncHeight,
+    setBestHeight,
+    fromHeight = undefined,
+    hardRefresh = false,
+  ) {
     console.log('syncing wallet...');
+
     if (fromHeight) {
       this.lastBlockHeight = fromHeight;
     }
@@ -69,6 +77,7 @@ export class Wallet {
 
     const bestBlock = await getBestBlock();
     console.log('Best server block', bestBlock);
+    setBestHeight(bestBlock.block_height);
     if (bestBlock.block_height === this.lastBlockHeight) {
       console.info('we are already up to speed');
     }
@@ -81,7 +90,8 @@ export class Wallet {
       try {
         // todo better error handling
         const newWalletUTXOs = await this.syncBlock(blockHeight);
-        console.log('new wallet utxos:', newWalletUTXOs);
+
+        console.log(getCurrentTimestamp(), 'new wallet utxos:', newWalletUTXOs);
         if (newWalletUTXOs) {
           this.addUTXOs(newWalletUTXOs);
         }
@@ -89,6 +99,7 @@ export class Wallet {
         this.removeSpentUTXOs(spentUTXOs);
         // we only update our height if all processes were successful
         this.lastBlockHeight = blockHeight;
+        setSyncHeight(this.lastBlockHeight);
         if (blockHeight % 100 === 0) {
           saveWallet(this);
         }
@@ -100,6 +111,7 @@ export class Wallet {
   }
 
   async syncBlock(blockHeight) {
+    console.log(getCurrentTimestamp(), 'started sync on:', blockHeight);
     const tweakData = await getTweakData(blockHeight);
 
     if (tweakData.length === 0) {
@@ -107,12 +119,16 @@ export class Wallet {
     }
 
     const filterResp = await getFilterTaproot(blockHeight);
+    console.log(getCurrentTimestamp(), 'received filter');
+    console.log(getCurrentTimestamp(), 'tweak data:', tweakData.length);
 
     const {pubKeysToCheck: pubKeysFromTweak, tweaksAsKey} = getPubKeysFromTweak(
       this.scan,
       this.spend,
       tweakData,
     );
+
+    console.log(getCurrentTimestamp(), 'computed pub keys');
 
     let pubKeysToCheck = [...pubKeysFromTweak];
     for (const script of this.scriptsToWatch) {
@@ -125,6 +141,7 @@ export class Wallet {
       Buffer.from(filterResp.block_header, 'hex').reverse(),
       pubKeysToCheck,
     );
+    console.log(getCurrentTimestamp(), 'looked for match');
 
     if (!isMatch) {
       console.log('no matches, try next block');
@@ -361,9 +378,6 @@ export class Wallet {
   removeSpentUTXOs(spentUTXOs) {
     let mySpentTXOs = [];
 
-    console.log(spentUTXOs);
-    console.log(this.utxos);
-
     this.utxos = this.utxos.filter(b => {
       for (let a of spentUTXOs) {
         if (a.vout === b.vout && a.txid === b.txid) {
@@ -373,8 +387,6 @@ export class Wallet {
       }
       return true;
     });
-
-    console.log(this.utxos);
 
     this.spentTxos = [...this.spentTxos, ...mySpentTXOs];
   }

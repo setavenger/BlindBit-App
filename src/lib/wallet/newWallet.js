@@ -4,6 +4,7 @@ import ecc from '../../modules/noble_ecc';
 import {Wallet} from './wallet';
 bitcoin.initEccLib(ecc);
 const bip39 = require('bip39');
+import {getBestBlock} from '../api/wallet';
 
 export async function newMnemonic() {
   const buf = await randomBytes(16);
@@ -53,7 +54,6 @@ function shuffle(array) {
 
 /* From BlueWallet */
 import crypto from 'crypto';
-import {getBestBlock} from '../api/wallet';
 // uses `crypto` module under nodejs/cli and shim under RN
 // @see blue_modules/crypto.js
 

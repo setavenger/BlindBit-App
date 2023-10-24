@@ -21,6 +21,8 @@ import {navigate} from '../navigation/NavigationService';
 import {StorageContext} from '../storage-context';
 import {getPrice} from '../lib/api/priceFiat';
 import {showConfirmAlert} from '../components/confirm';
+import {newMnemonic} from '../lib/wallet/newWallet';
+import {getBestBlock} from '../lib/api/wallet';
 
 const styles = StyleSheet.create({
   root: {
@@ -105,6 +107,8 @@ const Home = () => {
   const [balanceFiat, setBalanceFiat] = useState(0);
   const [lastReceived, setLastReceived] = useState(undefined);
   const [lastReceivedText, setLastReceivedText] = useState('');
+  const [bestHeight, setBestHeight] = useState(0);
+  const [syncHeight, setSyncHeight] = useState(0);
 
   useEffect(() => {
     console.log('computing balance');
@@ -122,6 +126,19 @@ const Home = () => {
       setLastReceivedText(lastReceived.value.toLocaleString('en-US'));
     }
   }, [updater, wallet, price, lastReceived]);
+
+  useEffect(() => {
+    setSyncHeight(wallet.lastBlockHeight);
+    (async function () {
+      try {
+        const bestBlock = await getBestBlock();
+        console.log('Best server block', bestBlock);
+        setBestHeight(bestBlock.block_height);
+      } catch (e) {
+        console.error(e);
+      }
+    })();
+  }, [wallet]);
 
   const navigateToSend = () => {
     navigate('SendDetailsRoot', {
@@ -144,7 +161,7 @@ const Home = () => {
     if (!isSyncing) {
       try {
         startRotation();
-        await wallet.syncWallet(saveWalletData);
+        await wallet.syncWallet(saveWalletData, setSyncHeight, setBestHeight);
 
         setIsSyncing(false);
         setBalance(wallet.computeBalance());
@@ -194,7 +211,13 @@ const Home = () => {
     if (!isSyncing) {
       try {
         startRotation();
-        await wallet.syncWallet(saveWalletData, undefined, true);
+        await wallet.syncWallet(
+          saveWalletData,
+          setSyncHeight,
+          setBestHeight,
+          undefined,
+          true,
+        );
 
         setIsSyncing(false);
         setBalance(wallet.computeBalance());
@@ -236,13 +259,20 @@ const Home = () => {
     // todo add indicator for sync progress
     return (
       <View style={styles.topBar}>
-        <Animated.View style={{transform: [{rotate: spin}]}}>
-          <TouchableOpacity
-            onPress={triggerRefresh}
-            onLongPress={triggerHardRefresh}>
-            <RefreshIcon style={styles.topBarIcon} />
-          </TouchableOpacity>
-        </Animated.View>
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <Animated.View style={{transform: [{rotate: spin}]}}>
+            <TouchableOpacity
+              onPress={triggerRefresh}
+              onLongPress={triggerHardRefresh}>
+              <RefreshIcon style={styles.topBarIcon} />
+            </TouchableOpacity>
+          </Animated.View>
+          <View>
+            <Text>
+              Sync: {syncHeight}/{bestHeight}
+            </Text>
+          </View>
+        </View>
         <View>
           <Text style={{color: '#FF0000'}}>Signet</Text>
         </View>
@@ -285,43 +315,41 @@ const Home = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Margin20View>
-        <View style={styles.containerTopBar}>{renderTopBar()}</View>
-        <View style={styles.containerMiddle}>
-          <View style={styles.containerBalance}>
-            <Text style={styles.textBalanceLabel}> Balance</Text>
-            <Spacing05 />
-            <Text style={styles.textBalanceMain}>
-              {balance.toLocaleString('en-US')} sats
-            </Text>
-            <Spacing05 />
-            <Text style={styles.textBalanceFiat}>
-              $
-              {balanceFiat.toLocaleString('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </Text>
-          </View>
-          <SpacingVar length={30} />
-          <View style={styles.containerSendReceive}>
-            <MainButton
-              Icon={ArrowUpIcon}
-              text={'Send'}
-              onPress={navigateToSend}
-            />
-            <MainButton
-              Icon={ArrowDownIcon}
-              text={'Receive'}
-              onPress={navigateToReceive}
-            />
-          </View>
-          <SpacingVar length={90} />
+    <Margin20View style={styles.container} loading={false}>
+      <View style={styles.containerTopBar}>{renderTopBar()}</View>
+      <View style={styles.containerMiddle}>
+        <View style={styles.containerBalance}>
+          <Text style={styles.textBalanceLabel}> Balance</Text>
+          <Spacing05 />
+          <Text style={styles.textBalanceMain}>
+            {balance.toLocaleString('en-US')} sats
+          </Text>
+          <Spacing05 />
+          <Text style={styles.textBalanceFiat}>
+            $
+            {balanceFiat.toLocaleString('en-US', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </Text>
         </View>
-        <View style={styles.containerBottom}>{renderTransactionSwipUp()}</View>
-      </Margin20View>
-    </SafeAreaView>
+        <SpacingVar length={30} />
+        <View style={styles.containerSendReceive}>
+          <MainButton
+            Icon={ArrowUpIcon}
+            text={'Send'}
+            onPress={navigateToSend}
+          />
+          <MainButton
+            Icon={ArrowDownIcon}
+            text={'Receive'}
+            onPress={navigateToReceive}
+          />
+        </View>
+        <SpacingVar length={90} />
+      </View>
+      <View style={styles.containerBottom}>{renderTransactionSwipUp()}</View>
+    </Margin20View>
   );
 };
 
